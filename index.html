@@ -1,0 +1,26 @@
+<html>
+<head>
+ 	<meta charset="UTF-8" />
+ 	<title>createJs</title>
+ 	<link href="css/style.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<a href="./html/">go</a>
+<script src="js/createjs-2015.11.26.min.js"></script>
+<script type="text/javascript">
+var queue = new createjs.LoadQueue();
+queue.installPlugin(createjs.Sound);
+queue.on("complete", handleComplete, this);
+queue.loadFile({id:"sound", src:"music/bgm.mp3"});
+queue.loadManifest([
+	{id: "myImage", src:"img/playerBtn.png"}
+]);
+function handleComplete() {
+	createjs.Sound.play("sound");
+	var image = queue.getResult("myImage");
+	document.body.appendChild(image);
+}
+</script>
+</body>
+</html> 
+
