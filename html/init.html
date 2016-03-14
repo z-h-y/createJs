@@ -1,0 +1,131 @@
+<html>
+<head>
+ 	<meta charset="UTF-8" />
+ 	<title>初始化</title>
+ 	<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+	<div id="foo" style="z-index: 1; position: absolute; background-color: #111; color:#FFF; width:260px; height:260px; padding: 10px; visibility: hidden;">
+		<b>Hello! I'm an HTML div.</b><br/><br/>
+		I am not rendered to the canvas, but I can be included in the display
+		list for positioning and transformations.<br/><br/>
+		This means I can contain any HTML content (rich text, forms, video,
+		etc), but I'm not a full part of the EaselJS display list.<br/><br/>
+		<button id="btn" width="100" onclick="alert('hello')">This is a
+			button!
+		</button>
+		<a href="http://easeljs.com/">This is a link</a>
+	</div>
+<canvas id="testCanvas" width="960" height="400"></canvas>
+<script src="../js/createjs-2015.11.26.min.js"></script>
+<script type="text/javascript">
+window.onload = function(){
+	init();
+}
+var stage,w,h,text,containerFoo;
+var musicBg = new Array();
+function init() {
+	stage = new createjs.Stage(document.getElementById("testCanvas"));
+	stage.enableMouseOver(10);
+	w = stage.canvas.width;
+	h = stage.canvas.height;
+	manifest = [
+	{src:"playerBtn.png",id:"musicBg"}
+	];
+	loader = new createjs.LoadQueue(false);
+	loader.addEventListener("complete", handleComplete);
+	loader.loadManifest(manifest,true,"../img/");
+}
+function handleComplete() {
+	var container = new createjs.Container();
+	var musicImg = loader.getResult("musicBg");
+	stage.addChild(container);
+	for (var i = 0; i < 3; i++) {
+		musicBg[i] = new createjs.Shape();
+		musicBg[i].imgWidth = musicImg.width;
+		musicBg[i].imgHeight = musicImg.height;
+		musicBg[i].graphics.beginBitmapFill(musicImg).drawRect(0,0,musicImg.width,musicImg.height);
+		musicBg[i].x = Math.random() * w;
+		musicBg[i].y = Math.random() * h;
+		musicBg[i].moving = true;
+		container.addChild(musicBg[i]);
+		musicBg[i].on("mousedown", function(evt){
+			this.parent.addChild(this);
+			this.offset = {x: this.x-evt.stageX, y: this.y-evt.stageY};
+			text.text = "mousedown";
+			this.moving = false;
+		});
+		musicBg[i].on("pressmove", function(evt){
+			this.x = evt.stageX+this.offset.x;
+			this.y = evt.stageY+this.offset.y;
+			text.text = "pressmove";
+		});
+		musicBg[i].on("pressup", function(evt){
+			this.moving = true;
+			text.text = "Click the music shape.\n";
+		});
+	}
+	container.cursor = "pointer";
+	text = stage.addChild(new createjs.Text("Click the music shape.\n", "14px monospace", "#111")).set({x: 250, y: 20, lineHeight: 20});
+
+	containerFoo = new createjs.Container();
+	stage.addChild(containerFoo);
+	var frame = new createjs.Shape();
+	frame.graphics.beginFill("#F00").drawRect(0, 0, 300, 300);
+	frame.regX = 150;
+	frame.regY = 150;
+	var content = new createjs.DOMElement("foo");
+	content.regX = 140;
+	content.regY = 140;
+	containerFoo.addChild(frame,content);
+	containerFoo.x = 480;
+	containerFoo.y = 200;
+	containerFoo.alpha = 0.8;
+	containerFoo.rotation = -45;
+
+	createjs.Ticker.addEventListener("tick",tick);
+}
+function tick(event) {
+	var deltaS = event.delta / 1000;
+	for (var i = 0; i < 3; i++) {
+		if(musicBg[i].moving) {
+			musicBg[i].x = (musicBg[i].x - deltaS * 30);
+			if(musicBg[i].x + musicBg[i].imgWidth <= 0 ) {
+				musicBg[i].x = w;
+				musicBg[i].y = Math.random() * h;
+			}
+			musicBg[i].y = (musicBg[i].y - deltaS * 30);
+			if(musicBg[i].y + musicBg[i].imgHeight <= 0 ) {
+				musicBg[i].y = h;
+				musicBg[i].x = Math.random() * w;
+			}
+		}
+	}
+	containerFoo.rotation += event.delta * 0.01;
+	containerFoo.alpha = 0.5 * (1 + Math.cos(containerFoo.rotation * 0.01));
+	stage.update(event);
+}
+
+function ClassA(name) {
+    this.name = name;
+}
+ClassA.prototype.greet = function() {
+    return "Hello "+this.name;
+}
+
+function ClassB(name, punctuation) {
+    this.ClassA_constructor(name);
+    this.punctuation = punctuation;
+}
+createjs.extend(ClassB, ClassA);
+ClassB.prototype.greet = function() {
+    return this.ClassA_greet()+this.punctuation;
+}
+createjs.promote(ClassB, "ClassA");
+
+var foo = new ClassB("World", "!?!");
+console.log(foo.greet()); // Hello World!?!
+</script>
+</body>
+</html> 
+
